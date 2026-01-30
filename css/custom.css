@@ -234,7 +234,8 @@ html[data-theme="dark"] .app-btn--ghost {
 .app-sidebar {
   position: fixed;
   top: 84px;
-  left: 12px;
+  right: 12px;
+  left: auto;
   width: min(440px, calc(100vw - 24px));
   max-height: calc(100vh - 96px);
   z-index: 1100;

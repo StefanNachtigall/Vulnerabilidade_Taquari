@@ -432,6 +432,25 @@ html[data-theme="dark"] .leaflet-popup-tip {
 
 .app-layers .leaflet-control-layers-list {
   margin: 0 !important;
+  background: transparent !important;
+}
+
+/* Alguns temas/plugins aplicam fundo branco em subcontainers do Layers Tree */
+.app-layers .leaflet-control-layers-scrollbar,
+.app-layers .leaflet-control-layers-base,
+.app-layers .leaflet-control-layers-overlays,
+.app-layers .leaflet-layerstree,
+.app-layers .leaflet-layerstree-children,
+.app-layers .leaflet-layerstree-header {
+  background: transparent !important;
+}
+
+.app-layers .leaflet-layerstree-header{
+  border-radius: 10px;
+}
+
+.app-layers .leaflet-layerstree-header:hover{
+  background: color-mix(in srgb, var(--app-panel-strong) 60%, transparent) !important;
 }
 
 .app-layers img { vertical-align: middle; }

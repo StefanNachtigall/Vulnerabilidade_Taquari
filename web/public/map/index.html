@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="description" content="Mapa interativo de vulnerabilidade ambiental — Rio Grande do Sul.">
+        <meta property="og:title" content="Vulnerabilidade — Rio Grande do Sul">
+        <meta property="og:description" content="Mapa interativo de vulnerabilidade ambiental — Rio Grande do Sul.">
+        <meta property="og:type" content="website">
+        <meta property="og:image" content="logo/logo.png">
+        <link rel="icon" type="image/png" href="logo/logo.png">
+        <link rel="apple-touch-icon" href="logo/logo.png">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <link rel="stylesheet" href="css/custom.css">
+        <meta name="theme-color" content="#0b1320">
+        <title>Vulnerabilidade — Rio Grande do Sul</title>
+    </head>
+    <body>
+        <header class="app-header" role="banner">
+            <div class="app-header__inner">
+                <div class="app-brand">
+                    <div class="app-title">Vulnerabilidade — Rio Grande do Sul</div>
+                    <div class="app-subtitle">Mapa interativo (QGIS → Web)</div>
+                </div>
+                <div class="app-actions" role="group" aria-label="Ações do mapa">
+                    <button class="app-btn" type="button" id="btn-toggle-sidebar" aria-controls="app-sidebar">
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <span>Camadas</span>
+                    </button>
+                    <button class="app-btn" type="button" id="btn-toggle-legend" aria-controls="app-legend">
+                        <i class="fas fa-list" aria-hidden="true"></i>
+                        <span>Legenda</span>
+                    </button>
+                    <button class="app-btn" type="button" id="btn-theme" aria-label="Alternar tema">
+                        <i class="fas fa-moon" aria-hidden="true" id="icon-theme"></i>
+                        <span>Tema</span>
+                    </button>
+                    <button class="app-btn app-btn--ghost" type="button" id="btn-toggle-about" aria-controls="app-about">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>Sobre</span>
+                    </button>
+                    <img class="app-logo app-logo--platform" src="logo/logoPlataforma.png" alt="Logo da plataforma" />
+                </div>
+            </div>
+        </header>
+
+        <aside class="app-panel app-panel--legend" id="app-legend" aria-label="Legenda" hidden>
+            <div class="app-panel__title">Legenda</div>
+            <div class="app-panel__content">
+                <p class="app-muted">Clique em um município para ver informações.</p>
+                <div class="app-legend">
+                    <div class="app-legend__item">
+                        <img src="legend/RS_Municipios_2022_6.png" alt="Simbologia dos municípios" />
+                        <div>
+                            <div class="app-legend__name">Municípios (RS)</div>
+                            <div class="app-legend__desc">Limites municipais.</div>
+                        </div>
+                    </div>
+                    <div class="app-legend__item">
+                        <img src="legend/AOI_DISSOLVE_5.png" alt="Simbologia da área de interesse" />
+                        <div>
+                            <div class="app-legend__name">Área de interesse</div>
+                            <div class="app-legend__desc">Delimitação da área de análise.</div>
+                        </div>
+                    </div>
+                    <div class="app-legend__item app-legend__item--noimg">
+                        <div>
+                            <div class="app-legend__name">Rasters temáticos</div>
+                            <div class="app-legend__desc">Vulnerabilidade, água, declividade, altitude e solos (camadas ligáveis em Camadas).</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <aside class="app-sidebar" id="app-sidebar" aria-label="Camadas e legenda">
+            <div class="app-sidebar__title">
+                <span>Camadas</span>
+                <div class="app-sidebar__title-actions" role="group" aria-label="Ações do painel de camadas">
+                    <button class="app-icon-btn" type="button" id="btn-collapse-sidebar" aria-label="Recolher camadas" aria-expanded="true">
+                        <i class="fas fa-chevron-up app-sidebar__collapse-icon" aria-hidden="true"></i>
+                    </button>
+                    <button class="app-icon-btn" type="button" id="btn-close-sidebar" aria-label="Fechar camadas">
+                        <i class="fas fa-xmark" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="app-sidebar__content" id="layers-host">
+                <div class="app-skeleton">Carregando camadas…</div>
+            </div>
+        </aside>
+
+        <aside class="app-panel" id="app-about" aria-label="Sobre este mapa" hidden>
+            <div class="app-panel__title">Sobre</div>
+            <div class="app-panel__content">
+                <p><strong>Objetivo:</strong> apoiar a visualização e a consulta pública/técnica de camadas temáticas relacionadas à vulnerabilidade ambiental no Rio Grande do Sul.</p>
+                <p><strong>Como usar:</strong> ative/desative camadas em <strong>Camadas</strong>. Clique em um município para ver informações.</p>
+                <p><strong>Metodologia (resumo):</strong> mapa gerado a partir de processamento em SIG (QGIS) e publicado via qgis2web (Leaflet). As camadas raster representam fatores temáticos (ex.: vulnerabilidade, água, declividade, altitude e solos).</p>
+                <p class="app-muted">Observação: a interpretação deve considerar a escala, a data dos dados e as limitações inerentes às fontes utilizadas.</p>
+            </div>
+        </aside>
+
+        <div id="map">
+        </div>
+
+        <div class="app-loading" id="app-loading" role="status" aria-live="polite">
+            <div class="app-loading__card">
+                <div class="app-loading__spinner" aria-hidden="true"></div>
+                <div>
+                    <div class="app-loading__title">Carregando mapa…</div>
+                    <div class="app-loading__subtitle">Isso pode levar alguns segundos.</div>
+                </div>
+            </div>
+        </div>
+
+        <img class="app-watermark" src="logo/logo.png" alt="Logo do site" />
+
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/AOI_DISSOLVE_5.js"></script>
+        <script src="data/RS_Municipios_2022_6.js"></script>
+        <script>
+        var initialBounds = [[-30.793247687529274,-53.233674441829685],[-27.73011086364366,-49.38334439116053]];
+        var map = L.map('map', {
+            zoomControl:false,
+            maxZoom: 28,
+            minZoom: 1,
+            preferCanvas: true
+        }).fitBounds(initialBounds);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+
+        // Basemap (necessário em HTTPS: use apenas URLs https://)
+        var layer_OSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        layer_OSM.addTo(map);
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+
+        // Controles extras: Início + Tela cheia
+        var HomeControl = L.Control.extend({
+            options: { position: 'topleft' },
+            onAdd: function() {
+                var container = L.DomUtil.create('div', 'leaflet-bar app-leaflet-bar');
+                var link = L.DomUtil.create('a', 'app-leaflet-btn', container);
+                link.href = '#';
+                link.title = 'Voltar ao início';
+                link.setAttribute('role', 'button');
+                link.setAttribute('aria-label', 'Voltar ao início');
+                link.innerHTML = '<i class="fas fa-house" aria-hidden="true"></i>';
+                L.DomEvent.on(link, 'click', function(e) {
+                    L.DomEvent.stop(e);
+                    map.fitBounds(initialBounds);
+                });
+                return container;
+            }
+        });
+        map.addControl(new HomeControl());
+
+        var FullscreenControl = L.Control.extend({
+            options: { position: 'topleft' },
+            onAdd: function() {
+                var container = L.DomUtil.create('div', 'leaflet-bar app-leaflet-bar');
+                var link = L.DomUtil.create('a', 'app-leaflet-btn', container);
+                link.href = '#';
+                link.title = 'Tela cheia';
+                link.setAttribute('role', 'button');
+                link.setAttribute('aria-label', 'Tela cheia');
+                link.innerHTML = '<i class="fas fa-expand" aria-hidden="true"></i>';
+
+                function updateIcon() {
+                    var isFs = Boolean(document.fullscreenElement);
+                    link.innerHTML = isFs
+                        ? '<i class="fas fa-compress" aria-hidden="true"></i>'
+                        : '<i class="fas fa-expand" aria-hidden="true"></i>';
+                    link.title = isFs ? 'Sair da tela cheia' : 'Tela cheia';
+                    link.setAttribute('aria-label', link.title);
+                }
+
+                document.addEventListener('fullscreenchange', updateIcon);
+                updateIcon();
+
+                L.DomEvent.on(link, 'click', function(e) {
+                    L.DomEvent.stop(e);
+                    var target = document.getElementById('map');
+                    if (!document.fullscreenElement) {
+                        if (target && target.requestFullscreen) target.requestFullscreen();
+                    } else {
+                        if (document.exitFullscreen) document.exitFullscreen();
+                    }
+                });
+                return container;
+            }
+        });
+        map.addControl(new FullscreenControl());
+
+        L.control.scale({position: 'bottomleft', imperial: false}).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            try {
+                if (bounds_group && bounds_group.getLayers().length) {
+                    map.fitBounds(bounds_group.getBounds());
+                }
+            } catch (e) {
+                // keep default bounds
+            }
+        }
+        map.createPane('pane_vulnerabilidade_taquari_0');
+        map.getPane('pane_vulnerabilidade_taquari_0').style.zIndex = 400;
+        var img_vulnerabilidade_taquari_0 = 'data/vulnerabilidade_taquari_0.png';
+        var img_bounds_vulnerabilidade_taquari_0 = [[-30.213920616141305,-52.68724263719591],[-28.166377709223898,-49.927657321597174]];
+        var layer_vulnerabilidade_taquari_0 = new L.imageOverlay(img_vulnerabilidade_taquari_0,
+                                              img_bounds_vulnerabilidade_taquari_0,
+                                              {pane: 'pane_vulnerabilidade_taquari_0'});
+        bounds_group.addLayer(layer_vulnerabilidade_taquari_0);
+        map.addLayer(layer_vulnerabilidade_taquari_0);
+        map.createPane('pane_agua_taquari_1');
+        map.getPane('pane_agua_taquari_1').style.zIndex = 401;
+        var img_agua_taquari_1 = 'data/agua_taquari_1.png';
+        var img_bounds_agua_taquari_1 = [[-30.213124009310153,-52.68562971837037],[-28.17071374590761,-49.929873586492135]];
+        var layer_agua_taquari_1 = new L.imageOverlay(img_agua_taquari_1,
+                                              img_bounds_agua_taquari_1,
+                                              {pane: 'pane_agua_taquari_1'});
+        bounds_group.addLayer(layer_agua_taquari_1);
+        map.addLayer(layer_agua_taquari_1);
+        map.createPane('pane_slop_taquari_2');
+        map.getPane('pane_slop_taquari_2').style.zIndex = 402;
+        var img_slop_taquari_2 = 'data/slop_taquari_2.png';
+        var img_bounds_slop_taquari_2 = [[-30.213920616141305,-52.68724263719591],[-28.166377709223898,-49.927657321597174]];
+        var layer_slop_taquari_2 = new L.imageOverlay(img_slop_taquari_2,
+                                              img_bounds_slop_taquari_2,
+                                              {pane: 'pane_slop_taquari_2'});
+        bounds_group.addLayer(layer_slop_taquari_2);
+        map.addLayer(layer_slop_taquari_2);
+        map.createPane('pane_altitude_taquari_3');
+        map.getPane('pane_altitude_taquari_3').style.zIndex = 403;
+        var img_altitude_taquari_3 = 'data/altitude_taquari_3.png';
+        var img_bounds_altitude_taquari_3 = [[-30.213920616141305,-52.68724263719591],[-28.166377709223898,-49.927657321597174]];
+        var layer_altitude_taquari_3 = new L.imageOverlay(img_altitude_taquari_3,
+                                              img_bounds_altitude_taquari_3,
+                                              {pane: 'pane_altitude_taquari_3'});
+        bounds_group.addLayer(layer_altitude_taquari_3);
+        map.addLayer(layer_altitude_taquari_3);
+        map.createPane('pane_solos_taquari_4');
+        map.getPane('pane_solos_taquari_4').style.zIndex = 404;
+        var img_solos_taquari_4 = 'data/solos_taquari_4.png';
+        var img_bounds_solos_taquari_4 = [[-30.21394944578148,-52.68718149109865],[-28.166407248648163,-49.92790700342546]];
+        var layer_solos_taquari_4 = new L.imageOverlay(img_solos_taquari_4,
+                                              img_bounds_solos_taquari_4,
+                                              {pane: 'pane_solos_taquari_4'});
+        bounds_group.addLayer(layer_solos_taquari_4);
+        map.addLayer(layer_solos_taquari_4);
+        function pop_AOI_DISSOLVE_5(feature, layer) {
+            // Popups abrem no clique (comportamento padrão do Leaflet)
+            var popupContent = '<div class="app-popup">\
+                <div class="app-popup__title">Área de interesse</div>\
+                <div class="app-popup__grid">\
+                  <div><span class="k">Área (km²)</span><span class="v">' + (feature.properties['Area_km2'] !== null ? autolinker.link(String(feature.properties['Area_km2']).replace(/'/g, '\'').toLocaleString()) : '—') + '</span></div>\
+                  <div><span class="k">Área (ha)</span><span class="v">' + (feature.properties['Area_ha'] !== null ? autolinker.link(String(feature.properties['Area_ha']).replace(/'/g, '\'').toLocaleString()) : '—') + '</span></div>\
+                </div>\
+              </div>';
+			layer.bindPopup(popupContent, { maxHeight: 400 });
+        }
+
+        function style_AOI_DISSOLVE_5_0() {
+            return {
+                pane: 'pane_AOI_DISSOLVE_5',
+                opacity: 1,
+                color: 'rgba(228,26,28,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 4.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_AOI_DISSOLVE_5');
+        map.getPane('pane_AOI_DISSOLVE_5').style.zIndex = 405;
+        map.getPane('pane_AOI_DISSOLVE_5').style['mix-blend-mode'] = 'normal';
+        var layer_AOI_DISSOLVE_5 = new L.geoJson(json_AOI_DISSOLVE_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AOI_DISSOLVE_5',
+            layerName: 'layer_AOI_DISSOLVE_5',
+            pane: 'pane_AOI_DISSOLVE_5',
+            onEachFeature: pop_AOI_DISSOLVE_5,
+            style: style_AOI_DISSOLVE_5_0,
+        });
+        bounds_group.addLayer(layer_AOI_DISSOLVE_5);
+        map.addLayer(layer_AOI_DISSOLVE_5);
+        function pop_RS_Municipios_2022_6(feature, layer) {
+            // Removido “hover para mostrar info”: agora aparece apenas no clique.
+            var nm = (feature.properties['NM_MUN'] !== null ? autolinker.link(String(feature.properties['NM_MUN']).replace(/'/g, '\'').toLocaleString()) : 'Município');
+            var uf = (feature.properties['SIGLA_UF'] !== null ? autolinker.link(String(feature.properties['SIGLA_UF']).replace(/'/g, '\'').toLocaleString()) : '');
+            var cd = (feature.properties['CD_MUN'] !== null ? autolinker.link(String(feature.properties['CD_MUN']).replace(/'/g, '\'').toLocaleString()) : '—');
+            var area = (feature.properties['AREA_KM2'] !== null ? autolinker.link(String(feature.properties['AREA_KM2']).replace(/'/g, '\'').toLocaleString()) : '—');
+
+            var popupContent = '<div class="app-popup">\
+                <div class="app-popup__title">' + nm + '</div>\
+                <div class="app-popup__meta">' + uf + '</div>\
+                <div class="app-popup__grid">\
+                  <div><span class="k">Código</span><span class="v">' + cd + '</span></div>\
+                  <div><span class="k">Área (km²)</span><span class="v">' + area + '</span></div>\
+                </div>\
+              </div>';
+			layer.bindPopup(popupContent, { maxHeight: 400 });
+
+            // Destaque no clique (mantém selecionado até escolher outro)
+            layer.on('click', function() {
+                try {
+                    if (window.__selectedMunicipio && layer_RS_Municipios_2022_6 && layer_RS_Municipios_2022_6.resetStyle) {
+                        layer_RS_Municipios_2022_6.resetStyle(window.__selectedMunicipio);
+                    }
+                } catch (e) {}
+
+                window.__selectedMunicipio = layer;
+                if (layer.setStyle) {
+                    layer.setStyle({
+                        weight: 3,
+                        color: 'rgba(245, 158, 11, 1.0)',
+                        fillOpacity: 0.08
+                    });
+                }
+                if (layer.bringToFront) layer.bringToFront();
+                if (layer.openPopup) layer.openPopup();
+            });
+        }
+
+        function style_RS_Municipios_2022_6_0() {
+            return {
+                pane: 'pane_RS_Municipios_2022_6',
+                opacity: 1,
+                color: 'rgba(77,175,74,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 1.5,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_RS_Municipios_2022_6');
+        map.getPane('pane_RS_Municipios_2022_6').style.zIndex = 406;
+        map.getPane('pane_RS_Municipios_2022_6').style['mix-blend-mode'] = 'normal';
+        var layer_RS_Municipios_2022_6 = new L.geoJson(json_RS_Municipios_2022_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_RS_Municipios_2022_6',
+            layerName: 'layer_RS_Municipios_2022_6',
+            pane: 'pane_RS_Municipios_2022_6',
+            onEachFeature: pop_RS_Municipios_2022_6,
+            style: style_RS_Municipios_2022_6_0,
+        });
+        bounds_group.addLayer(layer_RS_Municipios_2022_6);
+        map.addLayer(layer_RS_Municipios_2022_6);
+        const url = {"Nominatim OSM": "https://nominatim.openstreetmap.org/search?format=geojson&addressdetails=1&",
+        "France BAN": "https://api-adresse.data.gouv.fr/search/?"}
+        var photonControl = L.control.photon({
+            url: url["Nominatim OSM"],
+            feedbackLabel: '',
+            position: 'topleft',
+            includePosition: true,
+            initial: true,
+            // resultsHandler: myHandler,
+        }).addTo(map);
+        photonControl._container.childNodes[0].style.borderRadius="10px"
+        // Create a variable to store the geoJSON data
+        var x = null;
+        // Create a variable to store the marker
+        var marker = null;
+        // Add an event listener to the Photon control to create a marker from the returned geoJSON data
+        var z = null;
+        photonControl.on('selected', function(e) {
+            console.log(photonControl.search.resultsContainer);
+            if (x != null) {
+                map.removeLayer(obj3.marker);
+                map.removeLayer(x);
+            }
+            obj2.gcd = e.choice;
+            x = L.geoJSON(obj2.gcd).addTo(map);
+            var label = typeof obj2.gcd.properties.label === 'undefined' ? obj2.gcd.properties.display_name : obj2.gcd.properties.label;
+            obj3.marker = L.marker(x.getLayers()[0].getLatLng()).bindPopup(label).addTo(map);
+            map.setView(x.getLayers()[0].getLatLng(), 17);
+            z = typeof e.choice.properties.label === 'undefined'? e.choice.properties.display_name : e.choice.properties.label;
+            console.log(e);
+            e.target.input.value = z;
+        });
+        var search = document.getElementsByClassName("leaflet-photon leaflet-control")[0];
+        search.classList.add("leaflet-control-search")
+        search.style.display = "flex";
+        // Fundo/cores do controle são definidos no CSS (compatível com tema escuro)
+
+        // Create the new button element
+        var button = document.createElement("div");
+        button.id = "gcd-button-control";
+        button.className = "gcd-gl-btn fa fa-search search-button";
+
+        // Insert the button at the beginning of the search control
+        search.insertBefore(button, search.firstChild);
+        last = search.lastChild;
+        last.style.display = "none";
+        button.addEventListener("click", function (e) {
+            if (last.style.display === "none") {
+                last.style.display = "block";
+            } else {
+                last.style.display = "none";
+            }
+        });
+        var overlaysTree = [
+            {label: '<img src="legend/RS_Municipios_2022_6.png" /> RS_Municipios_2022', layer: layer_RS_Municipios_2022_6},
+        {label: '<b>Taquari</b>',  selectAllCheckbox: true, children: [
+            {label: '<img src="legend/AOI_DISSOLVE_5.png" /> AOI_DISSOLVE', layer: layer_AOI_DISSOLVE_5},
+            {label: "solos_taquari", layer: layer_solos_taquari_4},
+            {label: "altitude_taquari", layer: layer_altitude_taquari_3},
+            {label: "slop_taquari", layer: layer_slop_taquari_2},
+            {label: "agua_taquari", layer: layer_agua_taquari_1},
+            {label: "vulnerabilidade_taquari", layer: layer_vulnerabilidade_taquari_0},]},]
+
+        var baseTree = [
+            {label: 'OpenStreetMap', layer: layer_OSM},
+        ];
+
+        var lay = L.control.layers.tree(baseTree, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+
+        // UI: sidebar de camadas + tema + sobre (sem interferir no Leaflet)
+        (function() {
+            var sidebar = document.getElementById('app-sidebar');
+            var btnSidebar = document.getElementById('btn-toggle-sidebar');
+            var btnCloseSidebar = document.getElementById('btn-close-sidebar');
+            var btnCollapseSidebar = document.getElementById('btn-collapse-sidebar');
+            var btnAbout = document.getElementById('btn-toggle-about');
+            var aboutPanel = document.getElementById('app-about');
+            var btnLegend = document.getElementById('btn-toggle-legend');
+            var legendPanel = document.getElementById('app-legend');
+            var btnTheme = document.getElementById('btn-theme');
+            var iconTheme = document.getElementById('icon-theme');
+            var layersHost = document.getElementById('layers-host');
+            var layersControl = document.querySelector('.leaflet-control-layers');
+            var loading = document.getElementById('app-loading');
+
+            // Re-hospeda o controle de camadas dentro do painel (mais robusto)
+            if (layersHost && layersControl) {
+                layersHost.innerHTML = '';
+                layersHost.appendChild(layersControl);
+                layersControl.classList.add('app-layers');
+            }
+
+            function setSidebarOpen(open) {
+                if (!sidebar) return;
+                sidebar.toggleAttribute('hidden', !open);
+                if (btnSidebar) btnSidebar.setAttribute('aria-expanded', String(open));
+                try {
+                    localStorage.setItem('app.sidebar', open ? '1' : '0');
+                } catch (e) {}
+            }
+
+            function setLayersCollapsed(collapsed) {
+                if (!sidebar) return;
+                sidebar.dataset.collapsed = collapsed ? 'true' : 'false';
+                if (btnCollapseSidebar) btnCollapseSidebar.setAttribute('aria-expanded', String(!collapsed));
+                try {
+                    localStorage.setItem('app.layersCollapsed', collapsed ? '1' : '0');
+                } catch (e) {}
+            }
+
+            if (btnSidebar) {
+                btnSidebar.addEventListener('click', function() {
+                    setSidebarOpen(sidebar ? sidebar.hasAttribute('hidden') : true);
+                });
+                btnSidebar.setAttribute('aria-expanded', 'true');
+            }
+            if (btnCloseSidebar) {
+                btnCloseSidebar.addEventListener('click', function() {
+                    setSidebarOpen(false);
+                });
+            }
+            if (btnCollapseSidebar) {
+                btnCollapseSidebar.addEventListener('click', function() {
+                    var collapsed = sidebar && sidebar.dataset.collapsed === 'true';
+                    setLayersCollapsed(!collapsed);
+                });
+            }
+            if (btnAbout && aboutPanel) {
+                btnAbout.addEventListener('click', function() {
+                    aboutPanel.hidden = !aboutPanel.hidden;
+                    btnAbout.setAttribute('aria-expanded', String(!aboutPanel.hidden));
+                });
+                btnAbout.setAttribute('aria-expanded', 'false');
+            }
+
+            if (btnLegend && legendPanel) {
+                btnLegend.addEventListener('click', function() {
+                    legendPanel.hidden = !legendPanel.hidden;
+                    btnLegend.setAttribute('aria-expanded', String(!legendPanel.hidden));
+                });
+                btnLegend.setAttribute('aria-expanded', 'false');
+            }
+
+            function applyTheme(theme) {
+                document.documentElement.dataset.theme = theme;
+                try {
+                    localStorage.setItem('app.theme', theme);
+                } catch (e) {}
+
+                if (iconTheme) {
+                    iconTheme.classList.remove('fa-moon', 'fa-sun');
+                    iconTheme.classList.add(theme === 'dark' ? 'fa-sun' : 'fa-moon');
+                }
+            }
+            if (btnTheme) {
+                btnTheme.addEventListener('click', function() {
+                    var current = document.documentElement.dataset.theme || 'light';
+                    applyTheme(current === 'dark' ? 'light' : 'dark');
+                });
+            }
+
+            // Estado inicial (mobile: fechado; desktop: lembrado)
+            var isSmallScreen = window.innerWidth < 650;
+            var initialSidebarOpen = !isSmallScreen;
+            try {
+                var storedSidebar = localStorage.getItem('app.sidebar');
+                if (storedSidebar === '0') initialSidebarOpen = false;
+                if (storedSidebar === '1') initialSidebarOpen = true;
+            } catch (e) {}
+            setSidebarOpen(initialSidebarOpen);
+
+            // Estado inicial do recolher camadas
+            var initialCollapsed = false;
+            try {
+                var storedCollapsed = localStorage.getItem('app.layersCollapsed');
+                if (storedCollapsed === '1') initialCollapsed = true;
+                if (storedCollapsed === '0') initialCollapsed = false;
+            } catch (e) {}
+            setLayersCollapsed(initialCollapsed);
+
+            var initialTheme = 'light';
+            try {
+                var storedTheme = localStorage.getItem('app.theme');
+                if (storedTheme) initialTheme = storedTheme;
+            } catch (e) {}
+            applyTheme(initialTheme);
+
+            // Acessibilidade: títulos nos controles Leaflet
+            setTimeout(function() {
+                try {
+                    var zIn = document.querySelector('.leaflet-control-zoom-in');
+                    var zOut = document.querySelector('.leaflet-control-zoom-out');
+                    if (zIn) { zIn.setAttribute('aria-label', 'Aproximar'); zIn.title = 'Aproximar'; }
+                    if (zOut) { zOut.setAttribute('aria-label', 'Afastar'); zOut.title = 'Afastar'; }
+
+                    var locate = document.querySelector('.leaflet-control-locate a');
+                    if (locate) { locate.setAttribute('aria-label', 'Localizar'); locate.title = 'Localizar'; }
+
+                    var measure = document.querySelector('.leaflet-control-measure-toggle');
+                    if (measure) { measure.setAttribute('aria-label', 'Medir'); measure.title = 'Medir'; }
+
+                    var searchBtn = document.querySelector('#gcd-button-control');
+                    if (searchBtn) { searchBtn.setAttribute('role', 'button'); searchBtn.setAttribute('aria-label', 'Buscar'); searchBtn.title = 'Buscar'; }
+                } catch (e) {}
+            }, 0);
+
+            // Loader
+            window.addEventListener('load', function() {
+                if (!loading) return;
+                loading.classList.add('is-hidden');
+                setTimeout(function() {
+                    loading.setAttribute('hidden', '');
+                }, 350);
+            });
+        })();
+
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen && controlLayersElement) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }
+        });       
+        setBounds();
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        </script>
+    </body>
+</html>

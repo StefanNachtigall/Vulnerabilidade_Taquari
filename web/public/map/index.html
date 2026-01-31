@@ -150,6 +150,13 @@
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+
+        // Basemap (necessário em HTTPS: use apenas URLs https://)
+        var layer_OSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        layer_OSM.addTo(map);
         // remove popup's row if "visible-with-data"
         function removeEmptyRowsFromPopupContent(content, feature) {
          var tempDiv = document.createElement('div');
@@ -505,7 +512,12 @@
             {label: "slop_taquari", layer: layer_slop_taquari_2},
             {label: "agua_taquari", layer: layer_agua_taquari_1},
             {label: "vulnerabilidade_taquari", layer: layer_vulnerabilidade_taquari_0},]},]
-        var lay = L.control.layers.tree(null, overlaysTree,{
+
+        var baseTree = [
+            {label: 'OpenStreetMap', layer: layer_OSM},
+        ];
+
+        var lay = L.control.layers.tree(baseTree, overlaysTree,{
             //namedToggle: true,
             //selectorBack: false,
             //closedSymbol: '&#8862; &#x1f5c0;',
